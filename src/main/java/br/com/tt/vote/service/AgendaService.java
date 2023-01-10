@@ -1,11 +1,14 @@
 package br.com.tt.vote.service;
 
 import br.com.tt.vote.model.*;
+import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.repository.AgendaRepository;
 import br.com.tt.vote.repository.ResultRepository;
 import br.com.tt.vote.repository.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,13 +26,20 @@ public class AgendaService {
     private VoteRepository voteRepository;
     private ResultRepository resultRepository;
 
+    @Value("${spring.kafka.topic-name}")
+    private String kafkaTopicName;
+
+    private KafkaTemplate<String, String> kafkaTemplate;
+
     @Autowired
     public AgendaService(AgendaRepository agendaRepository,
                          VoteRepository voteRepository,
-                         ResultRepository resultRepository) {
+                         ResultRepository resultRepository,
+                         KafkaTemplate<String, String> kafkaTemplate) {
         this.agendaRepository = agendaRepository;
         this.voteRepository = voteRepository;
         this.resultRepository = resultRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public Agenda create(Agenda agenda) {
@@ -185,6 +195,8 @@ public class AgendaService {
 
         agenda.setAccountedResult(true);
         this.agendaRepository.save(agenda);
+
+        this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(results).toString());
 
         return results;
     }
