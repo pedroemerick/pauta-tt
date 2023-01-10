@@ -28,3 +28,14 @@ QuestionDTO:
       type: string
   required:
     - title
+#SessionStartInput:
+#  type: object
+#  properties:
+#    agenda_id:
+#      type: integer
+#      format: int64
+#    duration:
+#      type: integer
+#      format: int64
+#  required:
+#    - agenda_id

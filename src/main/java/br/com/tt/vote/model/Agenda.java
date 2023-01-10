@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -27,4 +28,10 @@ public class Agenda {
 
     @Column(name = "notes")
     private String notes;
+
+    @Column(name = "start_session")
+    private LocalDateTime startSessionIn;
+
+    @Column(name = "end_of_session")
+    private LocalDateTime endOfSessionIn;
 }

@@ -48,3 +48,26 @@ paths:
             application/json:
               schema:
                 $ref: './components.yaml/#/AgendaDTO'
+  /agenda/{id}/session/start:
+    post:
+      summary: Iniciar sessão de uma pauta
+      operationId: startSession
+      parameters:
+        - name: id
+          in: path
+          description: ID da pauta
+          required: true
+          schema:
+            type: integer
+            format: int64
+          style: simple
+        - name: duration
+          in: query
+          description: Minutos de duração da sessão
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Sessão de votação iniciada para a pauta

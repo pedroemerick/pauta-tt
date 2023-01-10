@@ -28,4 +28,11 @@ public class AgendaController implements AgendaApi {
 
         return ResponseEntity.ok().body(AgendaMapper.INSTANCE.map(agenda));
     }
+
+    @Override
+    public ResponseEntity<Void> startSession(Long id, Long duration) {
+        this.agendaService.startSession(id, duration);
+
+        return ResponseEntity.noContent().build();
+    }
 }
