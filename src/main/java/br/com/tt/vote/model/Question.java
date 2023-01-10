@@ -28,4 +28,8 @@ public class Question {
 
     @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Vote> votes;
+
+    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private Result result;
 }

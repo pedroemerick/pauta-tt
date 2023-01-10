@@ -1,9 +1,8 @@
 package br.com.tt.vote.service;
 
-import br.com.tt.vote.model.Agenda;
-import br.com.tt.vote.model.Question;
-import br.com.tt.vote.model.Vote;
+import br.com.tt.vote.model.*;
 import br.com.tt.vote.repository.AgendaRepository;
+import br.com.tt.vote.repository.ResultRepository;
 import br.com.tt.vote.repository.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,10 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,14 +21,19 @@ public class AgendaService {
 
     private AgendaRepository agendaRepository;
     private VoteRepository voteRepository;
+    private ResultRepository resultRepository;
 
     @Autowired
-    public AgendaService(AgendaRepository agendaRepository, VoteRepository voteRepository) {
+    public AgendaService(AgendaRepository agendaRepository,
+                         VoteRepository voteRepository,
+                         ResultRepository resultRepository) {
         this.agendaRepository = agendaRepository;
         this.voteRepository = voteRepository;
+        this.resultRepository = resultRepository;
     }
 
     public Agenda create(Agenda agenda) {
+        agenda.setAccountedResult(false);
         return this.agendaRepository.save(agenda);
     }
 
@@ -131,5 +132,60 @@ public class AgendaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("O associado já votou na questão %d.", numberOfQuestion));
         }
+    }
+
+    public List<Result> getVoteResults(Long agendaId) {
+        Agenda agenda = this.findById(agendaId);
+
+        if (Objects.isNull(agenda.getStartSessionIn()) || Objects.isNull(agenda.getEndOfSessionIn())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A sessão de votação desta pauta ainda não foi iniciada.");
+        }
+
+        LocalDateTime localDateTime = LocalDateTime.now();
+        if (localDateTime.isBefore(agenda.getEndOfSessionIn())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A sessão de votação desta pauta ainda está aberta.");
+        }
+
+        if (Objects.nonNull(agenda.getAccountedResult()) && agenda.getAccountedResult()) {
+            return agenda.getQuestions().stream()
+                    .map(Question::getResult)
+                    .toList();
+        }
+
+        List<Result> results = new ArrayList<>();
+        for (Question question : agenda.getQuestions()) {
+            List<Boolean> votes = question.getVotes().stream()
+                    .map(Vote::getInFavor)
+                    .toList();
+
+            long qntVotesInFavor = votes.stream().filter(inFavor -> inFavor.equals(true)).count();
+            long qntVotesAgainst = votes.stream().filter(inFavor -> inFavor.equals(false)).count();
+
+            FinalResultEnum finalResult;
+            if (qntVotesInFavor > qntVotesAgainst) {
+                finalResult = FinalResultEnum.APPROVED;
+            } else if (qntVotesAgainst > qntVotesInFavor) {
+                finalResult = FinalResultEnum.DISAPPROVED;
+            } else {
+                finalResult = FinalResultEnum.INCONCLUSIVE;
+            }
+
+            Result result = new Result();
+            result.setQuestion(question);
+            result.setQntVotesInFavor(qntVotesInFavor);
+            result.setQntVotesAgainst(qntVotesAgainst);
+            result.setFinalResult(finalResult);
+
+            results.add(result);
+        }
+
+        results = this.resultRepository.saveAll(results);
+
+        agenda.setAccountedResult(true);
+        this.agendaRepository.save(agenda);
+
+        return results;
     }
 }

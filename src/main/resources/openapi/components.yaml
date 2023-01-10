@@ -53,3 +53,50 @@ VoteDTO:
   required:
     - question_number
     - in_favor
+ResultDTO:
+  type: object
+  properties:
+    agenda:
+      $ref: '#/AgendaResultDTO'
+    questions:
+      type: array
+      items:
+        $ref: '#/QuestionResultDTO'
+  required:
+    - agenda
+    - questions
+AgendaResultDTO:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+    title:
+      type: string
+    notes:
+      type: string
+  required:
+    - id
+    - title
+QuestionResultDTO:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+    title:
+      type: string
+    qnt_votes_in_favor:
+      type: integer
+      format: int64
+    qnt_votes_against:
+      type: integer
+      format: int64
+    final_result:
+      type: string
+  required:
+    - id
+    - title
+    - qnt_votes_in_favor
+    - qnt_votes_against
+    - final_result

@@ -34,4 +34,7 @@ public class Agenda {
 
     @Column(name = "end_of_session")
     private LocalDateTime endOfSessionIn;
+
+    @Column(name = "accounted_result")
+    private Boolean accountedResult;
 }

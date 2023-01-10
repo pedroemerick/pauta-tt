@@ -93,3 +93,23 @@ paths:
       responses:
         '202':
           description: Votos recebidos para computação
+  /agenda/{id}/result:
+    get:
+      summary: Visualização do resultado das votações
+      operationId: getVoteResults
+      parameters:
+        - name: id
+          in: path
+          description: ID da pauta
+          required: true
+          schema:
+            type: integer
+            format: int64
+          style: simple
+      responses:
+        '200':
+          description: Resultado da pauta após sessão de votação
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ResultDTO'

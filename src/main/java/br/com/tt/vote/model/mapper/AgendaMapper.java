@@ -35,7 +35,7 @@ public interface AgendaMapper {
         Agenda agenda = new Agenda();
         agenda.setId(agendaDTO.getId());
         agenda.setTitle(agendaDTO.getTitle());
-        agenda.setQuestions(map(agendaDTO.getQuestions(), agenda));
+        agenda.setQuestions(this.map(agendaDTO.getQuestions(), agenda));
         agenda.setNotes(agendaDTO.getNotes());
 
         return agenda;

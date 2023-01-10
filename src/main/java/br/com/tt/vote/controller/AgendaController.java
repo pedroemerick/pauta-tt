@@ -2,14 +2,19 @@ package br.com.tt.vote.controller;
 
 import br.com.tt.vote.controller.openapi.AgendaApi;
 import br.com.tt.vote.model.Agenda;
+import br.com.tt.vote.model.Result;
 import br.com.tt.vote.model.mapper.AgendaMapper;
+import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.model.mapper.VoteMapper;
 import br.com.tt.vote.model.openapi.AgendaDTO;
+import br.com.tt.vote.model.openapi.ResultDTO;
 import br.com.tt.vote.model.openapi.VoteEntryDTO;
 import br.com.tt.vote.service.AgendaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class AgendaController implements AgendaApi {
@@ -43,5 +48,12 @@ public class AgendaController implements AgendaApi {
         this.agendaService.vote(id, VoteMapper.INSTANCE.map(voteEntryDTO));
 
         return ResponseEntity.accepted().build();
+    }
+
+    @Override
+    public ResponseEntity<ResultDTO> getVoteResults(Long id) {
+        List<Result> results = this.agendaService.getVoteResults(id);
+
+        return ResponseEntity.ok().body(ResultMapper.INSTANCE.map(results));
     }
 }

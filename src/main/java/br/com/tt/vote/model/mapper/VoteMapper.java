@@ -20,7 +20,7 @@ public interface VoteMapper {
             Question question = new Question();
             question.setNumber(voteDTO.getQuestionNumber());
 
-            return map(voteEntryDTO.getAssociateId(), voteDTO.getInFavor(), question);
+            return this.map(voteEntryDTO.getAssociateId(), voteDTO.getInFavor(), question);
         }).toList();
     }
 }
