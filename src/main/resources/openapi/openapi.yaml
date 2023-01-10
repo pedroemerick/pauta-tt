@@ -1,0 +1,50 @@
+openapi: "3.0.3"
+info:
+  title: Swagger do Sistema de Votação em Pautas
+  version: 1.0.0
+  license:
+    name: MIT
+  contact:
+    name: Pedro
+    email: p.emerick@live.com
+servers:
+  - url: http://localhost:8085/v1
+    description: Servidor de desenvolvimento local
+paths:
+  /agenda:
+    post:
+      summary: Criação de pauta para votação
+      operationId: createAgenda
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml/#/AgendaDTO'
+      responses:
+        '200':
+          description: Pauta criada
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/AgendaDTO'
+  /agenda/{id}:
+    get:
+      summary: Busca de pautas por ID
+      operationId: findAgendaById
+      parameters:
+        - name: id
+          in: path
+          description: ID da pauta
+          required: true
+          schema:
+            type: integer
+            format: int64
+          style: simple
+      responses:
+        '200':
+          description: Pauta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/AgendaDTO'
