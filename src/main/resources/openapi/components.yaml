@@ -28,14 +28,28 @@ QuestionDTO:
       type: string
   required:
     - title
-#SessionStartInput:
-#  type: object
-#  properties:
-#    agenda_id:
-#      type: integer
-#      format: int64
-#    duration:
-#      type: integer
-#      format: int64
-#  required:
-#    - agenda_id
+VoteEntryDTO:
+  type: object
+  properties:
+    associate_id:
+      type: integer
+      format: int64
+    votes:
+      type: array
+      minItems: 1
+      items:
+        $ref: '#/VoteDTO'
+  required:
+    - associate_id
+    - votes
+VoteDTO:
+  type: object
+  properties:
+    question_number:
+      type: integer
+      format: int64
+    in_favor:
+      type: boolean
+  required:
+    - question_number
+    - in_favor

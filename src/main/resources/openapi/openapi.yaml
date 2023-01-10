@@ -71,3 +71,25 @@ paths:
       responses:
         '204':
           description: Sessão de votação iniciada para a pauta
+  /agenda/{id}/vote:
+    post:
+      summary: Iniciar sessão de uma pauta
+      operationId: vote
+      parameters:
+        - name: id
+          in: path
+          description: ID da pauta
+          required: true
+          schema:
+            type: integer
+            format: int64
+          style: simple
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml/#/VoteEntryDTO'
+      responses:
+        '202':
+          description: Votos recebidos para computação

@@ -3,7 +3,9 @@ package br.com.tt.vote.controller;
 import br.com.tt.vote.controller.openapi.AgendaApi;
 import br.com.tt.vote.model.Agenda;
 import br.com.tt.vote.model.mapper.AgendaMapper;
+import br.com.tt.vote.model.mapper.VoteMapper;
 import br.com.tt.vote.model.openapi.AgendaDTO;
+import br.com.tt.vote.model.openapi.VoteEntryDTO;
 import br.com.tt.vote.service.AgendaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +36,12 @@ public class AgendaController implements AgendaApi {
         this.agendaService.startSession(id, duration);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> vote(Long id, VoteEntryDTO voteEntryDTO) {
+        this.agendaService.vote(id, VoteMapper.INSTANCE.map(voteEntryDTO));
+
+        return ResponseEntity.accepted().build();
     }
 }
