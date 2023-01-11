@@ -22,7 +22,7 @@ paths:
             schema:
               $ref: './components.yaml/#/AgendaDTO'
       responses:
-        '200':
+        '201':
           description: Pauta criada
           content:
             application/json:
@@ -48,6 +48,8 @@ paths:
             application/json:
               schema:
                 $ref: './components.yaml/#/AgendaDTO'
+        '404':
+          description: Pauta não encontrada
   /agenda/{id}/session/start:
     post:
       summary: Iniciar sessão de uma pauta

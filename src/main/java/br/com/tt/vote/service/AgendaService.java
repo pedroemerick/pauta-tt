@@ -2,6 +2,7 @@ package br.com.tt.vote.service;
 
 import br.com.tt.vote.config.GsonLocalDateTimeSerializer;
 import br.com.tt.vote.model.*;
+import br.com.tt.vote.model.exception.AgendaNotFoundException;
 import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.repository.AgendaRepository;
 import br.com.tt.vote.repository.QuestionRepository;
@@ -71,7 +72,7 @@ public class AgendaService {
 
     public Agenda findById(Long agendaId) {
         return this.agendaRepository.findById(agendaId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pauta não encontrada.")
+                new AgendaNotFoundException(agendaId)
         );
     }
 

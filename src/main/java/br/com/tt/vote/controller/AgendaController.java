@@ -11,6 +11,7 @@ import br.com.tt.vote.model.openapi.ResultDTO;
 import br.com.tt.vote.model.openapi.VoteEntryDTO;
 import br.com.tt.vote.service.AgendaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,14 +20,19 @@ import java.util.List;
 @RestController
 public class AgendaController implements AgendaApi {
 
-    @Autowired
     private AgendaService agendaService;
+
+    @Autowired
+    public AgendaController(AgendaService agendaService) {
+        this.agendaService = agendaService;
+    }
 
     @Override
     public ResponseEntity<AgendaDTO> createAgenda(AgendaDTO agendaDTO) {
         Agenda agenda = this.agendaService.create(AgendaMapper.INSTANCE.map(agendaDTO));
 
-        return ResponseEntity.ok().body(AgendaMapper.INSTANCE.map(agenda));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(AgendaMapper.INSTANCE.map(agenda));
     }
 
     @Override
