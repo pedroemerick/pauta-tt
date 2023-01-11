@@ -1,7 +1,7 @@
 package br.com.tt.vote.model.mapper;
 
 import br.com.tt.vote.model.Agenda;
-import br.com.tt.vote.model.Result;
+import br.com.tt.vote.model.Question;
 import br.com.tt.vote.model.openapi.AgendaResultDTO;
 import br.com.tt.vote.model.openapi.QuestionResultDTO;
 import br.com.tt.vote.model.openapi.ResultDTO;
@@ -18,15 +18,15 @@ public interface ResultMapper {
 
     AgendaResultDTO map(Agenda agenda);
 
-    @Mapping(source = "result.finalResult.label", target = "finalResult")
-    QuestionResultDTO map(Result result);
-    List<QuestionResultDTO> mapToQuestionsResult(List<Result> result);
+    @Mapping(source = "question.finalResult.label", target = "finalResult")
+    QuestionResultDTO map(Question question);
+    List<QuestionResultDTO> mapToQuestionsResult(List<Question> questions);
 
-    default ResultDTO map(List<Result> results) {
-        Agenda agenda = results.stream().findFirst().orElseThrow().getQuestion().getAgenda();
+    default ResultDTO map(List<Question> questions) {
+        Agenda agenda = questions.stream().findFirst().orElseThrow().getAgenda();
         AgendaResultDTO agendaResultDTO = this.map(agenda);
 
-        List<QuestionResultDTO> questionResultDTOS = this.mapToQuestionsResult(results);
+        List<QuestionResultDTO> questionResultDTOS = this.mapToQuestionsResult(questions);
 
         return new ResultDTO().agenda(agendaResultDTO).questions(questionResultDTOS);
     }

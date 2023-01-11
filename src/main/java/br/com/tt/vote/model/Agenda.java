@@ -23,7 +23,7 @@ public class Agenda {
     @Column(name = "title")
     private String title;
 
-    @OneToMany(mappedBy = "agenda", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "agenda", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Question> questions;
 
     @Column(name = "notes")

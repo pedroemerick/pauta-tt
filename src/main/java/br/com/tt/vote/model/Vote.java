@@ -24,7 +24,7 @@ public class Vote {
     @Column(name = "in_favor")
     private Boolean inFavor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 }

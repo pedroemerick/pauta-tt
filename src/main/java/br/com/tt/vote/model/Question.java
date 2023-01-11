@@ -26,10 +26,15 @@ public class Question {
     @Column(name = "title")
     private String title;
 
-    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Vote> votes;
 
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn
-    private Result result;
+    @Column(name = "qnt_votes_favor")
+    private Long qntVotesInFavor;
+
+    @Column(name = "qnt_votes_against")
+    private Long qntVotesAgainst;
+
+    @Column(name = "final_result")
+    private FinalResultEnum finalResult;
 }

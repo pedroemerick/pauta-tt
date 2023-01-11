@@ -24,7 +24,7 @@ public interface AgendaMapper {
     Question map(QuestionDTO questionDTO, Agenda agenda);
 
     default List<Question> map(List<QuestionDTO> questionDTOS, Agenda agenda) {
-        return questionDTOS.stream().map(questionDTO -> map(questionDTO, agenda)).toList();
+        return questionDTOS.stream().map(questionDTO -> this.map(questionDTO, agenda)).toList();
     }
 
     default Agenda map(AgendaDTO agendaDTO) {

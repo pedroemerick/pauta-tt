@@ -3,43 +3,52 @@ package br.com.tt.vote.service;
 import br.com.tt.vote.model.*;
 import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.repository.AgendaRepository;
-import br.com.tt.vote.repository.ResultRepository;
+import br.com.tt.vote.repository.QuestionRepository;
 import br.com.tt.vote.repository.VoteRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 public class AgendaService {
 
     private static final int DEFAULT_SESSION_DURATION = 1;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgendaService.class);
 
     private AgendaRepository agendaRepository;
     private VoteRepository voteRepository;
-    private ResultRepository resultRepository;
+    private QuestionRepository questionRepository;
+    private TaskScheduler taskScheduler;
 
     @Value("${spring.kafka.topic-name}")
     private String kafkaTopicName;
-
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
     public AgendaService(AgendaRepository agendaRepository,
                          VoteRepository voteRepository,
-                         ResultRepository resultRepository,
-                         KafkaTemplate<String, String> kafkaTemplate) {
+                         KafkaTemplate<String, String> kafkaTemplate,
+                         QuestionRepository questionRepository,
+                         TaskScheduler taskScheduler) {
         this.agendaRepository = agendaRepository;
         this.voteRepository = voteRepository;
-        this.resultRepository = resultRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.questionRepository = questionRepository;
+        this.taskScheduler = taskScheduler;
     }
 
     public Agenda create(Agenda agenda) {
@@ -48,7 +57,6 @@ public class AgendaService {
     }
 
     public Agenda findById(Long agendaId) {
-        // TODO adicionar tratamento para não encontrado
         return this.agendaRepository.findById(agendaId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pauta não encontrada.")
         );
@@ -74,6 +82,12 @@ public class AgendaService {
         agenda.setEndOfSessionIn(endOfSession);
 
         this.agendaRepository.save(agenda);
+
+        taskScheduler.schedule(() -> {
+            LOGGER.info(String.format("Iniciando cálculo dos resultados da pauta %d", agendaId));
+            getVoteResults(agendaId);
+            LOGGER.info(String.format("Finalizado cálculo dos resultados da pauta %d", agendaId));
+        }, Date.from(endOfSession.atZone(ZoneId.systemDefault()).toInstant()));
     }
 
     public void vote(Long agendaId, List<Vote> votes) {
@@ -144,7 +158,7 @@ public class AgendaService {
         }
     }
 
-    public List<Result> getVoteResults(Long agendaId) {
+    public List<Question> getVoteResults(Long agendaId) {
         Agenda agenda = this.findById(agendaId);
 
         if (Objects.isNull(agenda.getStartSessionIn()) || Objects.isNull(agenda.getEndOfSessionIn())) {
@@ -159,12 +173,9 @@ public class AgendaService {
         }
 
         if (Objects.nonNull(agenda.getAccountedResult()) && agenda.getAccountedResult()) {
-            return agenda.getQuestions().stream()
-                    .map(Question::getResult)
-                    .toList();
+            return agenda.getQuestions();
         }
 
-        List<Result> results = new ArrayList<>();
         for (Question question : agenda.getQuestions()) {
             List<Boolean> votes = question.getVotes().stream()
                     .map(Vote::getInFavor)
@@ -182,22 +193,16 @@ public class AgendaService {
                 finalResult = FinalResultEnum.INCONCLUSIVE;
             }
 
-            Result result = new Result();
-            result.setQuestion(question);
-            result.setQntVotesInFavor(qntVotesInFavor);
-            result.setQntVotesAgainst(qntVotesAgainst);
-            result.setFinalResult(finalResult);
-
-            results.add(result);
+            question.setQntVotesInFavor(qntVotesInFavor);
+            question.setQntVotesAgainst(qntVotesAgainst);
+            question.setFinalResult(finalResult);
         }
-
-        results = this.resultRepository.saveAll(results);
 
         agenda.setAccountedResult(true);
         this.agendaRepository.save(agenda);
 
-        this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(results).toString());
+        this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(agenda.getQuestions()).toString());
 
-        return results;
+        return agenda.getQuestions();
     }
 }

@@ -2,7 +2,7 @@ package br.com.tt.vote.controller;
 
 import br.com.tt.vote.controller.openapi.AgendaApi;
 import br.com.tt.vote.model.Agenda;
-import br.com.tt.vote.model.Result;
+import br.com.tt.vote.model.Question;
 import br.com.tt.vote.model.mapper.AgendaMapper;
 import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.model.mapper.VoteMapper;
@@ -52,8 +52,8 @@ public class AgendaController implements AgendaApi {
 
     @Override
     public ResponseEntity<ResultDTO> getVoteResults(Long id) {
-        List<Result> results = this.agendaService.getVoteResults(id);
+        List<Question> questions = this.agendaService.getVoteResults(id);
 
-        return ResponseEntity.ok().body(ResultMapper.INSTANCE.map(results));
+        return ResponseEntity.ok().body(ResultMapper.INSTANCE.map(questions));
     }
 }
