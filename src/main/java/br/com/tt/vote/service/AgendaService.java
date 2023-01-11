@@ -1,26 +1,29 @@
 package br.com.tt.vote.service;
 
+import br.com.tt.vote.config.GsonLocalDateTimeSerializer;
 import br.com.tt.vote.model.*;
 import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.repository.AgendaRepository;
 import br.com.tt.vote.repository.QuestionRepository;
 import br.com.tt.vote.repository.VoteRepository;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +36,8 @@ public class AgendaService {
     private VoteRepository voteRepository;
     private QuestionRepository questionRepository;
     private TaskScheduler taskScheduler;
+    private RedisTemplate<Long, String> redisTemplate;
+    private Gson gson;
 
     @Value("${spring.kafka.topic-name}")
     private String kafkaTopicName;
@@ -43,12 +48,20 @@ public class AgendaService {
                          VoteRepository voteRepository,
                          KafkaTemplate<String, String> kafkaTemplate,
                          QuestionRepository questionRepository,
-                         TaskScheduler taskScheduler) {
+                         TaskScheduler taskScheduler,
+                         @Qualifier("redisTemplate") RedisTemplate<Long, String> redisTemplate,
+                         Gson gson) {
         this.agendaRepository = agendaRepository;
         this.voteRepository = voteRepository;
         this.kafkaTemplate = kafkaTemplate;
         this.questionRepository = questionRepository;
         this.taskScheduler = taskScheduler;
+        this.redisTemplate = redisTemplate;
+        this.gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeSerializer())
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
     }
 
     public Agenda create(Agenda agenda) {
@@ -64,7 +77,11 @@ public class AgendaService {
 
     public void startSession(Long agendaId, Long duration) {
         // TODO Criar exceção personalizada
-        Agenda agenda = this.findById(agendaId);
+        Agenda agenda = gson.fromJson(redisTemplate.opsForValue().get(agendaId), Agenda.class);
+        if (Objects.isNull(agenda)) {
+            System.out.println("GET FROM H2");
+            agenda = this.findById(agendaId);
+        }
 
         if (Objects.nonNull(agenda.getStartSessionIn()) && Objects.nonNull(agenda.getEndOfSessionIn())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -88,10 +105,17 @@ public class AgendaService {
             getVoteResults(agendaId);
             LOGGER.info(String.format("Finalizado cálculo dos resultados da pauta %d", agendaId));
         }, Date.from(endOfSession.atZone(ZoneId.systemDefault()).toInstant()));
+
+        this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
+        this.redisTemplate.expireAt(agendaId, Date.from(endOfSession.atZone(ZoneId.systemDefault()).toInstant()));
     }
 
     public void vote(Long agendaId, List<Vote> votes) {
-        Agenda agenda = this.findById(agendaId);
+        Agenda agenda = gson.fromJson(redisTemplate.opsForValue().get(agendaId), Agenda.class);
+        if (Objects.isNull(agenda)) {
+            System.out.println("GET FROM H2");
+            agenda = this.findById(agendaId);
+        }
 
         if (Objects.isNull(agenda.getStartSessionIn()) || Objects.isNull(agenda.getEndOfSessionIn())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -123,9 +147,22 @@ public class AgendaService {
         for(Vote vote : votes) {
             this.checkIfAssociateAlreadyVotedInQuestion(questions, vote.getAssociateId(),
                     vote.getQuestion().getNumber());
+
+            Question question = questions.stream()
+                    .filter(qq -> qq.getNumber().equals(vote.getQuestion().getNumber()))
+                    .findFirst()
+                    .get();
+
+            if(Objects.isNull(question.getVotes())) {
+                question.setVotes(new ArrayList<>(){{add(vote);}});
+            } else {
+                question.getVotes().add(vote);
+            }
         }
 
         this.voteRepository.saveAll(votes);
+
+        this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
     }
 
     private void checkIfReceiveVotesForAllQuestions(Set<Long> numQuestionsOfAgenda, Set<Long> numQuestionsOfVote) {
@@ -160,6 +197,7 @@ public class AgendaService {
 
     public List<Question> getVoteResults(Long agendaId) {
         Agenda agenda = this.findById(agendaId);
+        agenda.setQuestions(this.questionRepository.findByAgendaId(agendaId));
 
         if (Objects.isNull(agenda.getStartSessionIn()) || Objects.isNull(agenda.getEndOfSessionIn())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -200,6 +238,8 @@ public class AgendaService {
 
         agenda.setAccountedResult(true);
         this.agendaRepository.save(agenda);
+
+        this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
 
         this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(agenda.getQuestions()).toString());
 
