@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -32,7 +33,7 @@ public class Question {
 
     @OneToMany(mappedBy = "question", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @Expose
-    private List<Vote> votes;
+    private List<Vote> votes = new ArrayList<>();
 
     @Column(name = "qnt_votes_favor")
     @Expose

@@ -1,8 +1,7 @@
-package br.com.tt.vote;
+package br.com.tt.vote.controller;
 
-import br.com.tt.vote.controller.AgendaController;
+import br.com.tt.vote.TestUtils;
 import br.com.tt.vote.model.Agenda;
-import br.com.tt.vote.model.FinalResultEnum;
 import br.com.tt.vote.model.Question;
 import br.com.tt.vote.model.exception.AgendaNotFoundException;
 import br.com.tt.vote.service.AgendaService;
@@ -102,7 +101,7 @@ public class AgendaControllerTest {
 
     @Test
     void shouldReturnSuccessWhenGetAgendaById() throws Exception {
-        final Agenda agendaMock = this.getAgendaMock();
+        final Agenda agendaMock = TestUtils.getAgendaMock();
 
         when(this.agendaService.findById(anyLong())).thenReturn(agendaMock);
 
@@ -174,7 +173,7 @@ public class AgendaControllerTest {
 
     @Test
     void shouldReturnSuccessWhenGetVoteResult() throws Exception {
-        final Question questionMock = this.getQuestionCompleteMock();
+        final Question questionMock = TestUtils.getQuestionCompleteMock();
 
         when(this.agendaService.getVoteResults(anyLong()))
                 .thenReturn(List.of(questionMock));
@@ -199,41 +198,5 @@ public class AgendaControllerTest {
                         is(equalTo(questionMock.getFinalResult().label))));
 
         verify(this.agendaService, times(1)).getVoteResults(anyLong());
-    }
-
-    private Agenda getAgendaMock() {
-        Agenda agenda = this.getOnlyAgendaMock();
-        agenda.setQuestions(List.of(this.getQuestionMock()));
-
-        return agenda;
-    }
-
-    private Question getQuestionMock() {
-        Question question = new Question();
-        question.setNumber(1L);
-        question.setTitle("anyTitle1");
-
-        return question;
-    }
-
-    private Question getQuestionCompleteMock() {
-        Question question = new Question();
-        question.setNumber(1L);
-        question.setTitle("anyTitle1");
-        question.setQntVotesInFavor(2L);
-        question.setQntVotesAgainst(1L);
-        question.setFinalResult(FinalResultEnum.APPROVED);
-        question.setAgenda(this.getOnlyAgendaMock());
-
-        return question;
-    }
-
-    private Agenda getOnlyAgendaMock() {
-        Agenda agenda = new Agenda();
-        agenda.setId(1L);
-        agenda.setTitle("anyTitle");
-        agenda.setNotes("anyNotes");
-
-        return agenda;
     }
 }

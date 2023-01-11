@@ -2,7 +2,7 @@ package br.com.tt.vote.service;
 
 import br.com.tt.vote.config.GsonLocalDateTimeSerializer;
 import br.com.tt.vote.model.*;
-import br.com.tt.vote.model.exception.AgendaNotFoundException;
+import br.com.tt.vote.model.exception.*;
 import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.repository.AgendaRepository;
 import br.com.tt.vote.repository.QuestionRepository;
@@ -23,7 +23,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,8 +49,7 @@ public class AgendaService {
                          KafkaTemplate<String, String> kafkaTemplate,
                          QuestionRepository questionRepository,
                          TaskScheduler taskScheduler,
-                         @Qualifier("redisTemplate") RedisTemplate<Long, String> redisTemplate,
-                         Gson gson) {
+                         @Qualifier("redisTemplate") RedisTemplate<Long, String> redisTemplate) {
         this.agendaRepository = agendaRepository;
         this.voteRepository = voteRepository;
         this.kafkaTemplate = kafkaTemplate;
@@ -78,18 +76,10 @@ public class AgendaService {
 
     public void startSession(Long agendaId, Long duration) {
         // TODO Criar exceção personalizada
-        Agenda agenda = gson.fromJson(redisTemplate.opsForValue().get(agendaId), Agenda.class);
-        if (Objects.isNull(agenda)) {
-            System.out.println("GET FROM H2");
-            agenda = this.findById(agendaId);
-        }
+        Agenda agenda = this.findById(agendaId);
 
         if (Objects.nonNull(agenda.getStartSessionIn()) && Objects.nonNull(agenda.getEndOfSessionIn())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("A sessão desta pauta já foi iniciada e se encerra no dia %s às %s.",
-                            agenda.getEndOfSessionIn().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                            agenda.getEndOfSessionIn().format(DateTimeFormatter.ofPattern("hh:mm:ss"))
-                    ));
+            throw new AlreadySessionStartException(agenda.getEndOfSessionIn());
         }
 
         LocalDateTime startSession = LocalDateTime.now();
@@ -114,19 +104,16 @@ public class AgendaService {
     public void vote(Long agendaId, List<Vote> votes) {
         Agenda agenda = gson.fromJson(redisTemplate.opsForValue().get(agendaId), Agenda.class);
         if (Objects.isNull(agenda)) {
-            System.out.println("GET FROM H2");
             agenda = this.findById(agendaId);
         }
 
         if (Objects.isNull(agenda.getStartSessionIn()) || Objects.isNull(agenda.getEndOfSessionIn())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A sessão de votação desta pauta não está aberta no momento.");
+            throw new NotStartedSessionException();
         }
 
         LocalDateTime localDateTime = LocalDateTime.now();
         if (localDateTime.isAfter(agenda.getEndOfSessionIn())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A sessão de votação desta pauta já foi encerrada.");
+            throw new ClosedSessionException();
         }
 
         List<Question> questions = agenda.getQuestions();
@@ -175,8 +162,7 @@ public class AgendaService {
 
     private void checkIfExistQuestionsOfVotes(Set<Long> numQuestionsOfAgenda, Set<Long> numQuestionsOfVote) {
         if (!numQuestionsOfAgenda.containsAll(numQuestionsOfVote)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Existem votos em questões não definidas na pauta.");
+            throw new QuestionNotOnTheAgendaException();
         }
     }
 
@@ -191,8 +177,7 @@ public class AgendaService {
                 .collect(Collectors.toSet());
 
         if (associateIds.contains(associateId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("O associado já votou na questão %d.", numberOfQuestion));
+            throw new VoteTwiceQuestionException(numberOfQuestion);
         }
     }
 
@@ -201,14 +186,12 @@ public class AgendaService {
         agenda.setQuestions(this.questionRepository.findByAgendaId(agendaId));
 
         if (Objects.isNull(agenda.getStartSessionIn()) || Objects.isNull(agenda.getEndOfSessionIn())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A sessão de votação desta pauta ainda não foi iniciada.");
+            throw new NotStartedSessionException();
         }
 
         LocalDateTime localDateTime = LocalDateTime.now();
         if (localDateTime.isBefore(agenda.getEndOfSessionIn())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A sessão de votação desta pauta ainda está aberta.");
+            throw new SessionInProgressException();
         }
 
         if (Objects.nonNull(agenda.getAccountedResult()) && agenda.getAccountedResult()) {
@@ -239,8 +222,6 @@ public class AgendaService {
 
         agenda.setAccountedResult(true);
         this.agendaRepository.save(agenda);
-
-        this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
 
         this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(agenda.getQuestions()).toString());
 
