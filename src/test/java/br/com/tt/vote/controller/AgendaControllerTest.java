@@ -182,10 +182,10 @@ public class AgendaControllerTest {
                         get("/v1/agenda/{id}/result", questionMock.getAgenda().getId())
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.agenda.id",
+                .andExpect(jsonPath("$.id",
                         is(equalTo(questionMock.getAgenda().getId().intValue()))))
-                .andExpect(jsonPath("$.agenda.title", is(equalTo(questionMock.getAgenda().getTitle()))))
-                .andExpect(jsonPath("$.agenda.notes", is(equalTo(questionMock.getAgenda().getNotes()))))
+                .andExpect(jsonPath("$.title", is(equalTo(questionMock.getAgenda().getTitle()))))
+                .andExpect(jsonPath("$.notes", is(equalTo(questionMock.getAgenda().getNotes()))))
                 .andExpect(jsonPath("$.questions", hasSize(1)))
                 .andExpect(jsonPath("$.questions[0].number",
                         is(equalTo(questionMock.getNumber().intValue()))))

@@ -6,7 +6,7 @@ import br.com.tt.vote.model.FinalResultEnum;
 import br.com.tt.vote.model.Question;
 import br.com.tt.vote.model.Vote;
 import br.com.tt.vote.model.exception.*;
-import br.com.tt.vote.model.mapper.ResultMapper;
+import br.com.tt.vote.model.mapper.AgendaMapper;
 import br.com.tt.vote.repository.AgendaRepository;
 import br.com.tt.vote.repository.QuestionRepository;
 import br.com.tt.vote.repository.VoteRepository;
@@ -241,7 +241,7 @@ public class AgendaService {
         this.agendaRepository.save(agenda);
 
         try {
-            this.kafkaTemplate.send(this.kafkaTopicName, String.valueOf(agendaId), ResultMapper.INSTANCE.map(agenda.getQuestions()).toString());
+            this.kafkaTemplate.send(this.kafkaTopicName, String.valueOf(agendaId), AgendaMapper.INSTANCE.map(agenda.getQuestions()).toString());
         } catch (KafkaException e) {
             LOGGER.error(String.format("Erro ao enviar resultado da pauta '%s' ao tópico do Kafka.", agendaId));
         }

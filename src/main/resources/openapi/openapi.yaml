@@ -160,7 +160,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components.yaml/#/ResultDTO'
+                $ref: './components.yaml/#/AgendaResultDTO'
         '404':
           description: Pauta não encontrada.
           content:

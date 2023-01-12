@@ -63,18 +63,6 @@ VoteDTO:
   required:
     - question_number
     - in_favor
-ResultDTO:
-  type: object
-  properties:
-    agenda:
-      $ref: '#/AgendaResultDTO'
-    questions:
-      type: array
-      items:
-        $ref: '#/QuestionResultDTO'
-  required:
-    - agenda
-    - questions
 AgendaResultDTO:
   type: object
   properties:
@@ -88,9 +76,14 @@ AgendaResultDTO:
     notes:
       description: Notas/observações sobre a pauta
       type: string
+    questions:
+      type: array
+      items:
+        $ref: '#/QuestionResultDTO'
   required:
     - id
     - title
+    - questions
 QuestionResultDTO:
   type: object
   properties:
