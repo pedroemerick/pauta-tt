@@ -1,0 +1,166 @@
+{
+	"info": {
+		"_postman_id": "056b96d3-6f37-4695-a550-c667fbedd29b",
+		"name": "Pauta",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6955233"
+	},
+	"item": [
+		{
+			"name": "Agenda - Create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"anyTitle\",\n    \"questions\": [\n        {\n            \"title\": \"anyQuestion\"\n        },\n        {\n            \"title\": \"anyQuestion\"\n        }\n    ],\n    \"notes\": \"anyNote\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8085/v1/agenda",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"v1",
+						"agenda"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Agenda - Find By ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8085/v1/agenda/:id",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"v1",
+						"agenda",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "44"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Agenda - Start Session",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8085/v1/agenda/:id/session/start?duration=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"v1",
+						"agenda",
+						":id",
+						"session",
+						"start"
+					],
+					"query": [
+						{
+							"key": "duration",
+							"value": "3"
+						}
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Agenda - Vote",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"associate_id\": 12,\n    \"votes\": [\n        {\n            \"question_number\": 98,\n            \"in_favor\": false\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8085/v1/agenda/:id/vote",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"v1",
+						"agenda",
+						":id",
+						"vote"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "49"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Agenda - Result",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8085/v1/agenda/:id/result",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"v1",
+						"agenda",
+						":id",
+						"result"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "50"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
