@@ -22,9 +22,9 @@ Se desejar utilizar o docker-compose, é necessário criar o tópico do Kafka co
 docker-compose exec kafka kafka-topics --bootstrap-server kafka:9092 --create --topic agendas-final-result
 ```
 
-No diretório 'extras' também é possível encontrar uma collection do Postman para importação com todos os endpoints da aplicação.
+No diretório 'extras' também é possível encontrar uma collection do Postman para importação com todos os endpoints da aplicação, e um teste básico/minimo de performance do Jmeter.
 
-[//]: # (Existem aperfeiçoamentos que podem ser realizados na aplicação, entre elas estão:)
-[//]: # (- ExceptionHandler personalizado)
-[//]: # (- Testes unitários exclusivos para Redis e Apache Kafka)
-[//]: # (- Testes de perfomance integrados)
+Existem aperfeiçoamentos que podem ser realizados na aplicação, entre elas estão:
+- ExceptionHandler personalizado para as respostas do OpenAPI
+- Testes unitários exclusivos para Redis e Apache Kafka
+- Apromorar e integrar os testes de perfomance
