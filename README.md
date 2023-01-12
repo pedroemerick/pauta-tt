@@ -25,6 +25,7 @@ docker-compose exec kafka kafka-topics --bootstrap-server kafka:9092 --create --
 No diretório 'extras' também é possível encontrar uma collection do Postman para importação com todos os endpoints da aplicação, e um teste básico/minimo de performance do Jmeter.
 
 Existem aperfeiçoamentos que podem ser realizados na aplicação, entre elas estão:
+- Criar Dockerfile para a aplicação
 - ExceptionHandler personalizado para as respostas do OpenAPI
 - Testes unitários exclusivos para Redis e Apache Kafka
 - Apromorar e integrar os testes de perfomance
