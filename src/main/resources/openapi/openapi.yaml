@@ -23,11 +23,17 @@ paths:
               $ref: './components.yaml/#/AgendaDTO'
       responses:
         '201':
-          description: Pauta criada
+          description: Pauta criada com sucesso.
           content:
             application/json:
               schema:
                 $ref: './components.yaml/#/AgendaDTO'
+        '400':
+          description: Erro na validação dos dados recebidos.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
   /agenda/{id}:
     get:
       summary: Busca de pautas por ID
@@ -43,13 +49,17 @@ paths:
           style: simple
       responses:
         '200':
-          description: Pauta encontrada
+          description: Pauta encontrada.
           content:
             application/json:
               schema:
                 $ref: './components.yaml/#/AgendaDTO'
         '404':
-          description: Pauta não encontrada
+          description: Pauta não encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
   /agenda/{id}/session/start:
     post:
       summary: Iniciar sessão de uma pauta
@@ -72,7 +82,19 @@ paths:
             format: int64
       responses:
         '204':
-          description: Sessão de votação iniciada para a pauta
+          description: Sessão de votação iniciada para a pauta com sucesso.
+        '404':
+          description: Pauta não encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
+        '400':
+          description: Erro na validação dos dados recebidos.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
   /agenda/{id}/vote:
     post:
       summary: Iniciar sessão de uma pauta
@@ -94,7 +116,19 @@ paths:
               $ref: './components.yaml/#/VoteEntryDTO'
       responses:
         '202':
-          description: Votos recebidos para computação
+          description: Votos recebidos para computação.
+        '404':
+          description: Pauta não encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
+        '400':
+          description: Erro na validação dos dados recebidos.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
   /agenda/{id}/result:
     get:
       summary: Visualização do resultado das votações
@@ -110,8 +144,20 @@ paths:
           style: simple
       responses:
         '200':
-          description: Resultado da pauta após sessão de votação
+          description: Resultados da pauta após sessão de votação.
           content:
             application/json:
               schema:
                 $ref: './components.yaml/#/ResultDTO'
+        '404':
+          description: Pauta não encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
+        '400':
+          description: Erro na validação dos dados recebidos.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'

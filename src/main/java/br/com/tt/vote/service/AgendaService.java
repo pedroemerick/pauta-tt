@@ -1,7 +1,10 @@
 package br.com.tt.vote.service;
 
 import br.com.tt.vote.config.GsonLocalDateTimeSerializer;
-import br.com.tt.vote.model.*;
+import br.com.tt.vote.model.Agenda;
+import br.com.tt.vote.model.FinalResultEnum;
+import br.com.tt.vote.model.Question;
+import br.com.tt.vote.model.Vote;
 import br.com.tt.vote.model.exception.*;
 import br.com.tt.vote.model.mapper.ResultMapper;
 import br.com.tt.vote.repository.AgendaRepository;
@@ -16,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -75,7 +79,6 @@ public class AgendaService {
     }
 
     public void startSession(Long agendaId, Long duration) {
-        // TODO Criar exceção personalizada
         Agenda agenda = this.findById(agendaId);
 
         if (Objects.nonNull(agenda.getStartSessionIn()) && Objects.nonNull(agenda.getEndOfSessionIn())) {
@@ -97,12 +100,22 @@ public class AgendaService {
             LOGGER.info(String.format("Finalizado cálculo dos resultados da pauta %d", agendaId));
         }, Date.from(endOfSession.atZone(ZoneId.systemDefault()).toInstant()));
 
-        this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
-        this.redisTemplate.expireAt(agendaId, Date.from(endOfSession.atZone(ZoneId.systemDefault()).toInstant()));
+        try {
+            this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
+            this.redisTemplate.expireAt(agendaId, Date.from(endOfSession.atZone(ZoneId.systemDefault()).toInstant()));
+        } catch (Exception e) {
+            LOGGER.error("Erro ao se comunicar com o Redis.");
+        }
     }
 
     public void vote(Long agendaId, List<Vote> votes) {
-        Agenda agenda = gson.fromJson(redisTemplate.opsForValue().get(agendaId), Agenda.class);
+        Agenda agenda = null;
+        try {
+            agenda = gson.fromJson(redisTemplate.opsForValue().get(agendaId), Agenda.class);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao se comunicar com o Redis.");
+        }
+
         if (Objects.isNull(agenda)) {
             agenda = this.findById(agendaId);
         }
@@ -150,7 +163,11 @@ public class AgendaService {
 
         this.voteRepository.saveAll(votes);
 
-        this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
+        try {
+            this.redisTemplate.opsForValue().set(agendaId, gson.toJson(agenda));
+        } catch (Exception e) {
+            LOGGER.error("Erro ao se comunicar com o Redis.");
+        }
     }
 
     private void checkIfReceiveVotesForAllQuestions(Set<Long> numQuestionsOfAgenda, Set<Long> numQuestionsOfVote) {
@@ -223,7 +240,11 @@ public class AgendaService {
         agenda.setAccountedResult(true);
         this.agendaRepository.save(agenda);
 
-        this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(agenda.getQuestions()).toString());
+        try {
+            this.kafkaTemplate.send(this.kafkaTopicName, ResultMapper.INSTANCE.map(agenda.getQuestions()).toString());
+        } catch (KafkaException e) {
+            LOGGER.error(String.format("Erro ao enviar resultado da pauta '%s' ao tópico do Kafka.", agendaId));
+        }
 
         return agenda.getQuestions();
     }

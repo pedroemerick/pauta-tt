@@ -2,17 +2,21 @@ AgendaDTO:
   type: object
   properties:
     id:
+      description: ID da pauta
       type: integer
       format: int64
       readOnly: true
     title:
+      description: Titulo da pauta
       type: string
     questions:
+      description: Questões a serem discutidas na pauta
       type: array
       minItems: 1
       items:
         $ref: '#/QuestionDTO'
     notes:
+      description: Notas/observações sobre a pauta
       type: string
   required:
     - title
@@ -21,10 +25,12 @@ QuestionDTO:
   type: object
   properties:
     number:
+      description: Número/ID da questão
       type: integer
       format: int64
       readOnly: true
     title:
+      description: Titulo da questão
       type: string
   required:
     - title
@@ -32,9 +38,11 @@ VoteEntryDTO:
   type: object
   properties:
     associate_id:
+      description: ID do associado que irá votar
       type: integer
       format: int64
     votes:
+      description: Lista de votos
       type: array
       minItems: 1
       items:
@@ -46,9 +54,11 @@ VoteDTO:
   type: object
   properties:
     question_number:
+      description: Número da questão a ser votada
       type: integer
       format: int64
     in_favor:
+      description: Voto para a questão, 'true' representa ser à favor e 'false' representa ser contra
       type: boolean
   required:
     - question_number
@@ -69,11 +79,14 @@ AgendaResultDTO:
   type: object
   properties:
     id:
+      description: ID da pauta
       type: integer
       format: int64
     title:
+      description: Titulo da pauta
       type: string
     notes:
+      description: Notas/observações sobre a pauta
       type: string
   required:
     - id
@@ -82,17 +95,22 @@ QuestionResultDTO:
   type: object
   properties:
     number:
+      description: Número/ID da questão
       type: integer
       format: int64
     title:
+      description: Titulo da questão
       type: string
     qnt_votes_in_favor:
+      description: Quantidade de votos à favor da questão recebidos
       type: integer
       format: int64
     qnt_votes_against:
+      description: Quantidade de votos contra a questão recebidos
       type: integer
       format: int64
     final_result:
+      description: Resultado final da votação, 'APROVADA', 'REPROVADA' ou 'INCONCLUSIVO'
       type: string
   required:
     - id
@@ -100,3 +118,21 @@ QuestionResultDTO:
     - qnt_votes_in_favor
     - qnt_votes_against
     - final_result
+ErrorDTO:
+  type: object
+  properties:
+    timestamp:
+      description: Data e hora do erro
+      type: string
+    status:
+      description: Código de status da resposta HTTP
+      type: integer
+    error:
+      description: Tipo de erro HTTP
+      type: string
+    message:
+      description: Detalhes e informações do erro
+      type: string
+    path:
+      description: Caminho da chamada que originou o erro
+      type: string
