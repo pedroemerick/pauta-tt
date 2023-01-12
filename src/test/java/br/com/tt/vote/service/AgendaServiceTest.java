@@ -154,7 +154,7 @@ public class AgendaServiceTest {
         agendaMock.setStartSessionIn(LocalDateTime.now());
         agendaMock.setEndOfSessionIn(LocalDateTime.now().plusHours(1));
 
-        Vote voteMock = TestUtils.getVote();
+        Vote voteMock = TestUtils.getVoteMock();
 
         when(this.redisTemplate.opsForValue()).thenReturn(mock(ValueOperations.class));
         when(this.redisTemplate.opsForValue().get(anyLong())).thenReturn(null);
@@ -172,7 +172,7 @@ public class AgendaServiceTest {
     void shouldReturnExceptionWhenVoteWithNotStartedSession() {
         Agenda agendaMock = TestUtils.getAgendaMock();
 
-        Vote voteMock = TestUtils.getVote();
+        Vote voteMock = TestUtils.getVoteMock();
 
         when(this.redisTemplate.opsForValue()).thenReturn(mock(ValueOperations.class));
         when(this.redisTemplate.opsForValue().get(anyLong())).thenReturn(null);
@@ -189,7 +189,7 @@ public class AgendaServiceTest {
         agendaMock.setStartSessionIn(LocalDateTime.now().minusHours(2));
         agendaMock.setEndOfSessionIn(LocalDateTime.now().minusHours(1));
 
-        Vote voteMock = TestUtils.getVote();
+        Vote voteMock = TestUtils.getVoteMock();
 
         when(this.redisTemplate.opsForValue()).thenReturn(mock(ValueOperations.class));
         when(this.redisTemplate.opsForValue().get(anyLong())).thenReturn(null);
@@ -202,7 +202,7 @@ public class AgendaServiceTest {
 
     @Test
     void shouldReturnExceptionWhenVoteInInvalidQuestion() {
-        Vote voteMock = TestUtils.getVote();
+        Vote voteMock = TestUtils.getVoteMock();
         voteMock.getQuestion().setNumber(2L);
 
         Agenda agendaMock = TestUtils.getAgendaMock();
@@ -219,7 +219,7 @@ public class AgendaServiceTest {
 
     @Test
     void shouldReturnExceptionWhenVoteTwiceInTheSameQuestion() {
-        Vote voteMock = TestUtils.getVote();
+        Vote voteMock = TestUtils.getVoteMock();
 
         Agenda agendaMock = TestUtils.getAgendaMock();
         agendaMock.setStartSessionIn(LocalDateTime.now());

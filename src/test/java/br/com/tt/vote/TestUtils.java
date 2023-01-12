@@ -48,12 +48,25 @@ public class TestUtils {
         return agenda;
     }
 
-    public static Vote getVote() {
+    public static Vote getVoteMock() {
         Vote vote = new Vote();
         vote.setQuestion(TestUtils.getQuestionMock());
         vote.setAssociateId(123456L);
         vote.setInFavor(false);
 
         return vote;
+    }
+
+    public static Agenda getAgendaMockWithoutIds() {
+        Agenda agenda = new Agenda();
+        agenda.setTitle("anyTitle");
+        agenda.setNotes("anyNotes");
+
+        Question question = new Question();
+        question.setTitle("anyTitleQuestion");
+        question.setAgenda(agenda);
+        agenda.setQuestions(List.of(question));
+
+        return agenda;
     }
 }
