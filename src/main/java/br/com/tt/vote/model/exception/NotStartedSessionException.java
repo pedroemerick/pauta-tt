@@ -6,7 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class NotStartedSessionException extends ResponseStatusException {
 
     public NotStartedSessionException() {
-        super(HttpStatus.BAD_REQUEST,
+        super(HttpStatus.CONFLICT,
                 "A sessão de votação desta pauta ainda não foi aberta.");
     }
 }

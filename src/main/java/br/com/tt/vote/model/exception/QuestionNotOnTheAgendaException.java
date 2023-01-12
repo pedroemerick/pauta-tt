@@ -6,7 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class QuestionNotOnTheAgendaException extends ResponseStatusException {
 
     public QuestionNotOnTheAgendaException() {
-        super(HttpStatus.BAD_REQUEST,
+        super(HttpStatus.CONFLICT,
                 "Existem votos em questões não definidas na pauta.");
     }
 }

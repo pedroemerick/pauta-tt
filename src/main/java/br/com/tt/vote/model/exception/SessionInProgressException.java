@@ -6,7 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class SessionInProgressException extends ResponseStatusException {
 
     public SessionInProgressException() {
-        super(HttpStatus.BAD_REQUEST,
+        super(HttpStatus.CONFLICT,
                 "A sessão de votação desta pauta ainda está aberta.");
     }
 }

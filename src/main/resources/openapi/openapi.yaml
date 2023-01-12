@@ -95,6 +95,12 @@ paths:
             application/json:
               schema:
                 $ref: './components.yaml/#/ErrorDTO'
+        '409':
+          description: Conflito com regra de negócio.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
   /agenda/{id}/vote:
     post:
       summary: Iniciar sessão de uma pauta
@@ -129,6 +135,12 @@ paths:
             application/json:
               schema:
                 $ref: './components.yaml/#/ErrorDTO'
+        '409':
+          description: Conflito com regra de negócio.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
   /agenda/{id}/result:
     get:
       summary: Visualização do resultado das votações
@@ -157,6 +169,12 @@ paths:
                 $ref: './components.yaml/#/ErrorDTO'
         '400':
           description: Erro na validação dos dados recebidos.
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml/#/ErrorDTO'
+        '409':
+          description: Conflito com regra de negócio.
           content:
             application/json:
               schema:

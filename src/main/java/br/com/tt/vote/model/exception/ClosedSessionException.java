@@ -6,7 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ClosedSessionException extends ResponseStatusException {
 
     public ClosedSessionException() {
-        super(HttpStatus.BAD_REQUEST,
+        super(HttpStatus.CONFLICT,
                 "A sessão de votação desta pauta já foi encerrada.");
     }
 }

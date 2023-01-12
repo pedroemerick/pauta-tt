@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 public class AlreadySessionStartException extends ResponseStatusException {
 
     public AlreadySessionStartException(LocalDateTime endSession) {
-        super(HttpStatus.BAD_REQUEST,
+        super(HttpStatus.CONFLICT,
                 String.format("A sessão desta pauta já foi iniciada e se encerra no dia %s às %s.",
                         endSession.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                         endSession.format(DateTimeFormatter.ofPattern("hh:mm:ss"))));
