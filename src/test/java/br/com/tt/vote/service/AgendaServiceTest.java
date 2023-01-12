@@ -13,7 +13,6 @@ import br.com.tt.vote.repository.VoteRepository;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.netty.util.concurrent.ScheduledFuture;
-import org.aspectj.weaver.ast.Not;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +29,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -284,7 +282,7 @@ public class AgendaServiceTest {
         assertThat(questions.get(2).getQntVotesAgainst(), is(equalTo(0L)));
         assertThat(questions.get(2).getFinalResult(), is(equalTo(FinalResultEnum.INCONCLUSIVE)));
 
-        verify(this.kafkaTemplate, times(1)).send(any(), anyString());
+        verify(this.kafkaTemplate, times(1)).send(any(), anyString(), anyString());
     }
 
     @Test
@@ -309,7 +307,7 @@ public class AgendaServiceTest {
         assertThat(questions.get(0).getFinalResult(), is(equalTo(questionMock.getFinalResult())));
 
         verify(this.agendaRepository, times(0)).save(any(Agenda.class));
-        verify(this.kafkaTemplate, times(0)).send(any(), anyString());
+        verify(this.kafkaTemplate, times(0)).send(any(), anyString(), anyString());
     }
 
     @Test

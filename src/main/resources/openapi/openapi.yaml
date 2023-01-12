@@ -75,7 +75,7 @@ paths:
           style: simple
         - name: duration
           in: query
-          description: Minutos de duração da sessão
+          description: Minutos de duração da sessão, por padrão é definido um minuto
           required: false
           schema:
             type: integer
